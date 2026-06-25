@@ -88,7 +88,7 @@ function AuthPage() {
         <div className="absolute -bottom-32 -right-32 size-[500px] rounded-full bg-cta/30 blur-3xl" />
         <div className="relative z-10">
           <p className="text-3xl font-semibold leading-tight max-w-md">
-            « FlowBudget AI m'a fait économiser 280€ dès le premier mois. »
+            « FlowBudget AI m'a fait économiser 280 000 Ar dès le premier mois. »
           </p>
           <p className="mt-4 text-sm text-background/60">Yacine M. — Consultant indépendant</p>
         </div>

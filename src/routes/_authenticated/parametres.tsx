@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_authenticated/parametres")({
       </div>
       <div className="rounded-2xl bg-white border border-border divide-y divide-border">
         <Row title="Langue" value="Français" />
-        <Row title="Devise" value="EUR (€)" />
+        <Row title="Devise" value="MGA (Ariary)" />
         <Row title="Notifications email" value="Activées" />
         <Row title="Thème" value="Clair" />
       </div>

@@ -56,6 +56,10 @@ export const CATEGORIES = [
 
 export const PAYMENT_METHODS = ["Carte", "Espèces", "Virement", "Prélèvement"] as const;
 
-export function fmtEUR(n: number) {
-  return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
+export function fmtMGA(n: number) {
+  return new Intl.NumberFormat("fr-MG", {
+    style: "currency",
+    currency: "MGA",
+    maximumFractionDigits: 0,
+  }).format(n);
 }

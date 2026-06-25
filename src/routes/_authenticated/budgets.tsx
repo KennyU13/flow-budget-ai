@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Plus, Trash2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { budgetsQuery, expensesQuery, CATEGORIES, fmtEUR } from "@/lib/expenses.queries";
+import { budgetsQuery, expensesQuery, CATEGORIES, fmtMGA } from "@/lib/expenses.queries";
 
 export const Route = createFileRoute("/_authenticated/budgets")({
   head: () => ({ meta: [{ title: "Budgets · FlowBudget AI" }] }),
@@ -76,7 +76,7 @@ function BudgetsPage() {
                   <div>
                     <p className="font-semibold">{b.category}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {fmtEUR(spent)} sur {fmtEUR(Number(b.monthly_limit))}
+                      {fmtMGA(spent)} sur {fmtMGA(Number(b.monthly_limit))}
                     </p>
                   </div>
                   <button
@@ -96,8 +96,8 @@ function BudgetsPage() {
                   className={`mt-2 text-xs ${over ? "text-destructive" : "text-muted-foreground"}`}
                 >
                   {over
-                    ? `Dépassé de ${fmtEUR(spent - Number(b.monthly_limit))}`
-                    : `Reste ${fmtEUR(Number(b.monthly_limit) - spent)}`}
+                    ? `Dépassé de ${fmtMGA(spent - Number(b.monthly_limit))}`
+                    : `Reste ${fmtMGA(Number(b.monthly_limit) - spent)}`}
                 </p>
               </div>
             );
@@ -174,7 +174,7 @@ function BudgetDialog({ onClose }: { onClose: () => void }) {
           </label>
           <label className="block">
             <span className="text-xs font-medium text-muted-foreground mb-1.5 block">
-              Limite mensuelle (€)
+              Limite mensuelle (Ar)
             </span>
             <input
               required

@@ -9,18 +9,18 @@ export const Route = createFileRoute("/_authenticated/abonnement")({
 const plans = [
   {
     name: "Gratuit",
-    price: "0 €",
+    price: "0 Ar",
     features: ["50 dépenses/mois", "1 budget", "Analytics de base"],
   },
   {
     name: "Pro",
-    price: "9 €",
+    price: "45 000 Ar",
     features: ["Dépenses illimitées", "Budgets illimités", "IA financière", "Rapports mensuels"],
     highlight: true,
   },
   {
     name: "Business",
-    price: "29 €",
+    price: "145 000 Ar",
     features: ["Tout Pro", "Multi-utilisateurs", "Export comptable", "Support prioritaire"],
   },
 ];

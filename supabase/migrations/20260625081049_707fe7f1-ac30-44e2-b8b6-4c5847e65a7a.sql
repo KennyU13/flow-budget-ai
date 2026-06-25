@@ -10,7 +10,7 @@ CREATE TABLE public.profiles (
   nom TEXT NOT NULL DEFAULT '',
   email TEXT NOT NULL,
   avatar_url TEXT,
-  devise TEXT NOT NULL DEFAULT 'EUR',
+  devise TEXT NOT NULL DEFAULT 'MGA',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

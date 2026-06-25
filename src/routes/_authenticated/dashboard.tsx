@@ -12,7 +12,7 @@ import {
   Tooltip,
 } from "recharts";
 import { ArrowDownRight, ArrowUpRight, Plus, Sparkles, TrendingDown } from "lucide-react";
-import { expensesQuery, budgetsQuery, fmtEUR } from "@/lib/expenses.queries";
+import { expensesQuery, budgetsQuery, fmtMGA } from "@/lib/expenses.queries";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Tableau de bord · FlowBudget AI" }] }),
@@ -78,15 +78,15 @@ function Dashboard() {
       </motion.div>
 
       <div className="grid md:grid-cols-3 gap-4">
-        <Stat title="Dépenses du mois" value={fmtEUR(total)} delta="−12% vs M-1" trend="down" />
+        <Stat title="Dépenses du mois" value={fmtMGA(total)} delta="−12% vs M-1" trend="down" />
         <Stat
           title="Budget total"
-          value={fmtEUR(budgetTotal)}
+          value={fmtMGA(budgetTotal)}
           delta={`${budgets.length} budgets`}
         />
         <Stat
           title="Économies estimées"
-          value={fmtEUR(Math.max(0, budgetTotal - total))}
+          value={fmtMGA(Math.max(0, budgetTotal - total))}
           delta="objectif tenu"
           trend="up"
         />
@@ -97,7 +97,7 @@ function Dashboard() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-xs text-muted-foreground">Évolution sur 30 jours</p>
-              <p className="text-2xl font-semibold mt-1">{fmtEUR(total)}</p>
+              <p className="text-2xl font-semibold mt-1">{fmtMGA(total)}</p>
             </div>
           </div>
           <div className="h-64">
@@ -112,7 +112,7 @@ function Dashboard() {
                 <XAxis dataKey="d" axisLine={false} tickLine={false} fontSize={10} stroke="#888" />
                 <Tooltip
                   contentStyle={{ borderRadius: 12, border: "1px solid #eee" }}
-                  formatter={(v) => fmtEUR(Number(v))}
+                  formatter={(v) => fmtMGA(Number(v))}
                 />
                 <Area type="monotone" dataKey="v" stroke="#111" strokeWidth={2} fill="url(#da)" />
               </AreaChart>
@@ -141,7 +141,7 @@ function Dashboard() {
                       <Cell key={i} fill={d.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(v) => fmtEUR(Number(v))} />
+                  <Tooltip formatter={(v) => fmtMGA(Number(v))} />
                 </PieChart>
               </ResponsiveContainer>
             )}
@@ -152,7 +152,7 @@ function Dashboard() {
                 <span className="flex items-center gap-2">
                   <span className="size-2 rounded-full" style={{ background: c.color }} /> {c.name}
                 </span>
-                <span className="text-muted-foreground">{fmtEUR(c.value)}</span>
+                <span className="text-muted-foreground">{fmtMGA(c.value)}</span>
               </div>
             ))}
           </div>
@@ -186,7 +186,7 @@ function Dashboard() {
                       </p>
                     </div>
                   </div>
-                  <p className="text-sm font-semibold">−{fmtEUR(Number(e.amount))}</p>
+                  <p className="text-sm font-semibold">−{fmtMGA(Number(e.amount))}</p>
                 </li>
               ))}
             </ul>
@@ -202,7 +202,7 @@ function Dashboard() {
             <h3 className="font-semibold text-lg">Recommandation IA</h3>
             <p className="text-sm text-background/70 mt-2 leading-relaxed">
               Vos dépenses « Restaurants » sont en hausse de 18% ce mois. Réduire de 2 sorties
-              pourrait économiser environ 60 €.
+              pourrait économiser environ 60 000 Ar.
             </p>
             <a
               href="/ia"

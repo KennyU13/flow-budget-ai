@@ -9,7 +9,7 @@ import {
   expensesQuery,
   CATEGORIES,
   PAYMENT_METHODS,
-  fmtEUR,
+  fmtMGA,
   type Expense,
 } from "@/lib/expenses.queries";
 
@@ -57,7 +57,7 @@ function DepensesPage() {
         <div>
           <h1 className="text-3xl">Dépenses</h1>
           <p className="text-muted-foreground mt-1">
-            {filtered.length} dépenses · total {fmtEUR(total)}
+            {filtered.length} dépenses · total {fmtMGA(total)}
           </p>
         </div>
         <button
@@ -119,7 +119,7 @@ function DepensesPage() {
                   <td className="px-5 py-3 text-muted-foreground">
                     {new Date(e.date).toLocaleDateString("fr-FR")}
                   </td>
-                  <td className="px-5 py-3 text-right font-semibold">{fmtEUR(Number(e.amount))}</td>
+                  <td className="px-5 py-3 text-right font-semibold">{fmtMGA(Number(e.amount))}</td>
                   <td className="px-5 py-3">
                     <div className="flex justify-end gap-1">
                       <button
@@ -222,7 +222,7 @@ function ExpenseDialog({ expense, onClose }: { expense: Expense | null; onClose:
             />
           </Row>
           <div className="grid grid-cols-2 gap-3">
-            <Row label="Montant (€)">
+            <Row label="Montant (Ar)">
               <input
                 required
                 type="number"

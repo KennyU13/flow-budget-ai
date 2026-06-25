@@ -11,7 +11,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { expensesQuery, fmtEUR } from "@/lib/expenses.queries";
+import { expensesQuery, fmtMGA } from "@/lib/expenses.queries";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
   head: () => ({ meta: [{ title: "Analytics · FlowBudget AI" }] }),
@@ -56,8 +56,8 @@ function AnalyticsPage() {
         <p className="text-muted-foreground mt-1">Visualisez vos tendances financières.</p>
       </div>
       <div className="grid md:grid-cols-3 gap-4">
-        <Card title="Total cumulé">{fmtEUR(totalAll)}</Card>
-        <Card title="Moyenne mensuelle">{fmtEUR(avg)}</Card>
+        <Card title="Total cumulé">{fmtMGA(totalAll)}</Card>
+        <Card title="Moyenne mensuelle">{fmtMGA(avg)}</Card>
         <Card title="Catégories actives">{catData.length}</Card>
       </div>
       <div className="grid lg:grid-cols-2 gap-4">
@@ -69,7 +69,7 @@ function AnalyticsPage() {
                 <XAxis dataKey="name" axisLine={false} tickLine={false} fontSize={11} />
                 <YAxis axisLine={false} tickLine={false} fontSize={11} />
                 <Tooltip
-                  formatter={(v) => fmtEUR(Number(v))}
+                  formatter={(v) => fmtMGA(Number(v))}
                   contentStyle={{ borderRadius: 12, border: "1px solid #eee" }}
                 />
                 <Bar dataKey="total" fill="#111" radius={[8, 8, 0, 0]} />
@@ -97,7 +97,7 @@ function AnalyticsPage() {
                       <Cell key={i} fill={d.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(v) => fmtEUR(Number(v))} />
+                  <Tooltip formatter={(v) => fmtMGA(Number(v))} />
                 </PieChart>
               </ResponsiveContainer>
             )}

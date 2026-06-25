@@ -174,7 +174,7 @@ function DashboardMock() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-muted-foreground">Dépenses · ce mois</p>
-              <p className="text-3xl font-semibold mt-1">1 880,00 €</p>
+              <p className="text-3xl font-semibold mt-1">1 880 000 Ar</p>
             </div>
             <span className="text-xs px-2 py-1 rounded-full bg-cta/30 text-foreground font-medium">
               −12% vs M-1
@@ -330,14 +330,14 @@ function Preview() {
 const plans = [
   {
     name: "Gratuit",
-    price: "0 €",
+    price: "0 Ar",
     desc: "Pour débuter en douceur.",
     features: ["Jusqu'à 50 dépenses / mois", "1 budget", "Analytics de base"],
     cta: "Commencer",
   },
   {
     name: "Pro",
-    price: "9 €",
+    price: "45 000 Ar",
     desc: "Pour les particuliers exigeants.",
     features: ["Dépenses illimitées", "Budgets illimités", "IA financière", "Rapports mensuels"],
     cta: "Essayer Pro",
@@ -345,7 +345,7 @@ const plans = [
   },
   {
     name: "Business",
-    price: "29 €",
+    price: "145 000 Ar",
     desc: "Pour les équipes & familles.",
     features: ["Tout Pro", "Multi-utilisateurs", "Export comptable", "Support prioritaire"],
     cta: "Contacter",
@@ -413,7 +413,7 @@ const testimonials = [
   {
     name: "Yacine M.",
     role: "Consultant",
-    text: "Les recommandations IA m'ont fait économiser 280€ le premier mois.",
+    text: "Les recommandations IA m'ont fait économiser 280 000 Ar le premier mois.",
   },
   {
     name: "Léa T.",

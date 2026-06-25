@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Sparkles, TrendingDown, AlertCircle, Target } from "lucide-react";
-import { expensesQuery, budgetsQuery, fmtEUR } from "@/lib/expenses.queries";
+import { expensesQuery, budgetsQuery, fmtMGA } from "@/lib/expenses.queries";
 
 export const Route = createFileRoute("/_authenticated/ia")({
   head: () => ({ meta: [{ title: "IA Financière · FlowBudget AI" }] }),
@@ -25,7 +25,7 @@ function IAPage() {
     insights.push({
       icon: Target,
       title: `Votre principale catégorie : ${top[0]}`,
-      desc: `Elle représente ${fmtEUR(top[1])} de vos dépenses totales. Identifiez 1 à 2 leviers d'optimisation.`,
+      desc: `Elle représente ${fmtMGA(top[1])} de vos dépenses totales. Identifiez 1 à 2 leviers d'optimisation.`,
     });
   }
 
@@ -43,7 +43,7 @@ function IAPage() {
       insights.push({
         icon: AlertCircle,
         title: `Budget « ${b.category} » dépassé`,
-        desc: `Vous avez dépensé ${fmtEUR(s)} pour une limite de ${fmtEUR(Number(b.monthly_limit))}. Envisagez de réajuster.`,
+        desc: `Vous avez dépensé ${fmtMGA(s)} pour une limite de ${fmtMGA(Number(b.monthly_limit))}. Envisagez de réajuster.`,
       });
     }
   });
@@ -52,7 +52,7 @@ function IAPage() {
     insights.push({
       icon: TrendingDown,
       title: "Économie potentielle détectée",
-      desc: "Réduire vos dépenses « Restaurants » de 20% libérerait environ 60 € par mois selon votre historique.",
+      desc: "Réduire vos dépenses « Restaurants » de 20% libérerait environ 60 000 Ar par mois selon votre historique.",
     });
   }
 
