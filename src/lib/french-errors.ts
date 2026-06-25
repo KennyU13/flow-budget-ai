@@ -30,6 +30,15 @@ export function getFrenchErrorMessage(error: unknown, fallback = "Une erreur est
   if (normalized.includes("network") || normalized.includes("fetch")) {
     return "Connexion réseau indisponible. Vérifiez votre connexion internet.";
   }
+  if (normalized.includes("bucket not found") || normalized.includes("storage bucket")) {
+    return "Le stockage des avatars n'est pas encore configuré. Créez le bucket Supabase 'avatars' et appliquez les règles de sécurité.";
+  }
+  if (normalized.includes("mime type") || normalized.includes("invalid mime")) {
+    return "Format d'image non accepté. Utilisez JPG, PNG, WebP ou GIF.";
+  }
+  if (normalized.includes("payload too large") || normalized.includes("exceeded")) {
+    return "La photo est trop lourde. Choisissez une image de 5 Mo maximum.";
+  }
   if (
     normalized.includes("row-level security") ||
     normalized.includes("violates row-level security")

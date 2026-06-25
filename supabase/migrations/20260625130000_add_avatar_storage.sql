@@ -4,13 +4,15 @@ VALUES (
   'avatars',
   true,
   5242880,
-  ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+  ARRAY['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
 )
 ON CONFLICT (id) DO NOTHING;
 
+DROP POLICY IF EXISTS "avatars_public_read" ON storage.objects;
 CREATE POLICY "avatars_public_read" ON storage.objects
   FOR SELECT USING (bucket_id = 'avatars');
 
+DROP POLICY IF EXISTS "avatars_owner_insert" ON storage.objects;
 CREATE POLICY "avatars_owner_insert" ON storage.objects
   FOR INSERT TO authenticated
   WITH CHECK (
@@ -18,6 +20,7 @@ CREATE POLICY "avatars_owner_insert" ON storage.objects
     AND auth.uid()::text = (storage.foldername(name))[1]
   );
 
+DROP POLICY IF EXISTS "avatars_owner_update" ON storage.objects;
 CREATE POLICY "avatars_owner_update" ON storage.objects
   FOR UPDATE TO authenticated
   USING (
@@ -29,6 +32,7 @@ CREATE POLICY "avatars_owner_update" ON storage.objects
     AND auth.uid()::text = (storage.foldername(name))[1]
   );
 
+DROP POLICY IF EXISTS "avatars_owner_delete" ON storage.objects;
 CREATE POLICY "avatars_owner_delete" ON storage.objects
   FOR DELETE TO authenticated
   USING (

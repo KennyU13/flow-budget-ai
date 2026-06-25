@@ -81,6 +81,7 @@ function ProfilPage() {
       const path = `${user.id}/${Date.now()}.${extension}`;
       const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, {
         cacheControl: "3600",
+        contentType: file.type,
         upsert: true,
       });
       if (uploadError) throw uploadError;
