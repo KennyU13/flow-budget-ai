@@ -225,12 +225,19 @@ function DashboardMock() {
 }
 
 function Logos() {
-  const items = ["NORDIC", "Helios", "FINEA", "Veracore", "Lumen", "Atlas Pay"];
+  const items = [
+    "Suivi personnel",
+    "Budgets",
+    "Analytics",
+    "IA financière",
+    "Alertes",
+    "Abonnement",
+  ];
   return (
     <section className="border-y border-border bg-white">
       <div className="mx-auto max-w-7xl px-6 py-10">
         <p className="text-center text-xs text-muted-foreground uppercase tracking-widest mb-6">
-          Adopté par des équipes financières exigeantes
+          Une application imaginée et produite par RAKOTONDRAZANDRY Kenny Urvano
         </p>
         <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-4 opacity-60">
           {items.map((t) => (
@@ -404,49 +411,42 @@ function Pricing() {
   );
 }
 
-const testimonials = [
+const visionPoints = [
   {
-    name: "Camille R.",
-    role: "Designer indépendante",
-    text: "FlowBudget AI a remplacé 3 outils. C'est limpide et beau.",
+    title: "Pensé pour le quotidien",
+    text: "FlowBudget AI aide à suivre les dépenses, comprendre les habitudes et garder une vision claire du budget.",
   },
   {
-    name: "Yacine M.",
-    role: "Consultant",
-    text: "Les recommandations IA m'ont fait économiser 280 000 Ar le premier mois.",
+    title: "Construit autour de Madagascar",
+    text: "L'interface met l'Ariary au centre et garde une expérience simple pour les besoins financiers locaux.",
   },
   {
-    name: "Léa T.",
-    role: "Étudiante",
-    text: "Enfin une app finance qui ne ressemble pas à un tableur.",
+    title: "Produit évolutif",
+    text: "Le projet est conçu pour progresser vers l'abonnement, les alertes avancées et les recommandations intelligentes.",
   },
 ];
 
-function Testimonials() {
+function ProductVision() {
   return (
     <section className="py-28 bg-secondary">
       <div className="mx-auto max-w-7xl px-6">
         <motion.h2 {...fade} className="text-4xl md:text-5xl max-w-2xl">
-          Ils ont repris le contrôle.
+          Une idée originale, construite pour devenir un vrai produit.
         </motion.h2>
+        <p className="mt-4 max-w-2xl text-muted-foreground">
+          FlowBudget AI est produit par RAKOTONDRAZANDRY Kenny Urvano. La priorité est de créer une
+          application utile, claire et prête à évoluer vers une offre commerciale.
+        </p>
         <div className="grid md:grid-cols-3 gap-4 mt-12">
-          {testimonials.map((t, i) => (
+          {visionPoints.map((item, i) => (
             <motion.div
-              key={t.name}
+              key={item.title}
               {...fade}
               transition={{ duration: 0.6, delay: i * 0.07 }}
               className="rounded-2xl border border-border p-7 bg-white"
             >
-              <p className="text-base leading-relaxed">"{t.text}"</p>
-              <div className="mt-6 flex items-center gap-3">
-                <div className="size-9 rounded-full bg-foreground text-background grid place-items-center text-sm font-semibold">
-                  {t.name[0]}
-                </div>
-                <div>
-                  <p className="text-sm font-medium">{t.name}</p>
-                  <p className="text-xs text-muted-foreground">{t.role}</p>
-                </div>
-              </div>
+              <p className="text-lg font-semibold">{item.title}</p>
+              <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{item.text}</p>
             </motion.div>
           ))}
         </div>
@@ -555,7 +555,7 @@ function Landing() {
       <Features />
       <Preview />
       <Pricing />
-      <Testimonials />
+      <ProductVision />
       <FAQ />
       <FinalCTA />
       <Footer />

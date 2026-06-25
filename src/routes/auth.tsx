@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Eye, EyeOff, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getFrenchErrorMessage } from "@/lib/french-errors";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -57,8 +58,7 @@ function AuthPage() {
         setMode("signin");
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Erreur inconnue";
-      toast.error(msg);
+      toast.error(getFrenchErrorMessage(err, "Impossible de terminer l'opération."));
     } finally {
       setLoading(false);
     }
@@ -72,7 +72,7 @@ function AuthPage() {
       },
     });
     if (error) {
-      toast.error("Connexion Google impossible.");
+      toast.error(getFrenchErrorMessage(error, "Connexion Google impossible."));
     }
   }
 
@@ -88,9 +88,12 @@ function AuthPage() {
         <div className="absolute -bottom-32 -right-32 size-[500px] rounded-full bg-cta/30 blur-3xl" />
         <div className="relative z-10">
           <p className="text-3xl font-semibold leading-tight max-w-md">
-            « FlowBudget AI m'a fait économiser 280 000 Ar dès le premier mois. »
+            Une application de gestion financière pensée pour suivre les dépenses, les budgets et
+            les décisions importantes.
           </p>
-          <p className="mt-4 text-sm text-background/60">Yacine M. — Consultant indépendant</p>
+          <p className="mt-4 text-sm text-background/60">
+            Produit par RAKOTONDRAZANDRY Kenny Urvano
+          </p>
         </div>
       </div>
 
@@ -163,7 +166,7 @@ function AuthPage() {
                   onChange={(e) => setNom(e.target.value)}
                   required
                   className="input-base"
-                  placeholder="Camille Dupont"
+                  placeholder="RAKOTONDRAZANDRY Kenny Urvano"
                 />
               </Field>
             )}

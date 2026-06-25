@@ -5,6 +5,7 @@ import { Plus, Trash2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { budgetsQuery, expensesQuery, CATEGORIES, fmtMGA } from "@/lib/expenses.queries";
+import { getFrenchErrorMessage } from "@/lib/french-errors";
 
 export const Route = createFileRoute("/_authenticated/budgets")({
   head: () => ({ meta: [{ title: "Budgets · FlowBudget AI" }] }),
@@ -42,6 +43,7 @@ function BudgetsPage() {
       qc.invalidateQueries({ queryKey: ["budgets"] });
       toast.success("Budget supprimé");
     },
+    onError: (e: Error) => toast.error(getFrenchErrorMessage(e)),
   });
 
   return (
@@ -136,7 +138,7 @@ function BudgetDialog({ onClose }: { onClose: () => void }) {
       toast.success("Budget enregistré");
       onClose();
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(getFrenchErrorMessage(e)),
   });
 
   return (

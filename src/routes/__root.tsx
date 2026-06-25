@@ -85,7 +85,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Suivez, analysez et optimisez vos finances personnelles avec une plateforme fintech intelligente.",
       },
-      { name: "author", content: "FlowBudget AI" },
+      { name: "author", content: "RAKOTONDRAZANDRY Kenny Urvano" },
       { property: "og:title", content: "FlowBudget AI" },
       { property: "og:description", content: "Prenez le contrôle total de vos dépenses." },
       { property: "og:type", content: "website" },
@@ -112,7 +112,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <head>
         <HeadContent />
       </head>

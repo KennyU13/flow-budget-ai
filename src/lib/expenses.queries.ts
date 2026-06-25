@@ -57,9 +57,14 @@ export const CATEGORIES = [
 export const PAYMENT_METHODS = ["Carte", "Espèces", "Virement", "Prélèvement"] as const;
 
 export function fmtMGA(n: number) {
+  const currency =
+    typeof window === "undefined"
+      ? "MGA"
+      : window.localStorage.getItem("flowbudget:currency") || "MGA";
+
   return new Intl.NumberFormat("fr-MG", {
     style: "currency",
-    currency: "MGA",
-    maximumFractionDigits: 0,
+    currency,
+    maximumFractionDigits: currency === "MGA" ? 0 : 2,
   }).format(n);
 }

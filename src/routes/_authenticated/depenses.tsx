@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Plus, Search, Trash2, Pencil, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getFrenchErrorMessage } from "@/lib/french-errors";
 import {
   expensesQuery,
   CATEGORIES,
@@ -48,7 +49,7 @@ function DepensesPage() {
       qc.invalidateQueries({ queryKey: ["expenses"] });
       toast.success("Dépense supprimée");
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(getFrenchErrorMessage(e)),
   });
 
   return (
@@ -189,7 +190,7 @@ function ExpenseDialog({ expense, onClose }: { expense: Expense | null; onClose:
       toast.success(expense ? "Dépense modifiée" : "Dépense ajoutée");
       onClose();
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(getFrenchErrorMessage(e)),
   });
 
   return (
