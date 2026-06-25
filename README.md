@@ -5,7 +5,7 @@ FlowBudget AI est une plateforme SaaS moderne de gestion intelligente des dépen
 L’application permet de suivre ses finances, gérer ses budgets, analyser ses dépenses et recevoir des recommandations financières intelligentes via une interface fintech premium.
 
 ## Aperçu
-![FlowBudget AI Dashboard](./dashboard-preview.png)
+![FlowBudget AI Dashboard](public/demo/dashboard-preview.png)
 
 ## Fonctionnalités
 
