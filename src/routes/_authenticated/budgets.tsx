@@ -4,7 +4,13 @@ import { useState } from "react";
 import { Plus, Trash2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { budgetsQuery, expensesQuery, CATEGORIES, fmtMGA } from "@/lib/expenses.queries";
+import {
+  budgetsQuery,
+  expensesQuery,
+  CATEGORIES,
+  fmtMGA,
+  getCategoryColor,
+} from "@/lib/expenses.queries";
 import { getFrenchErrorMessage } from "@/lib/french-errors";
 
 export const Route = createFileRoute("/_authenticated/budgets")({
@@ -91,7 +97,10 @@ function BudgetsPage() {
                 <div className="mt-4 h-2 bg-secondary rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all ${over ? "bg-destructive" : "bg-foreground"}`}
-                    style={{ width: `${pct}%` }}
+                    style={{
+                      width: `${pct}%`,
+                      backgroundColor: over ? undefined : getCategoryColor(b.category),
+                    }}
                   />
                 </div>
                 <p

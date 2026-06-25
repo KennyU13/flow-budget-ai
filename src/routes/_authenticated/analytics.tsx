@@ -11,7 +11,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { expensesQuery, fmtMGA } from "@/lib/expenses.queries";
+import { expensesQuery, fmtMGA, getCategoryColor } from "@/lib/expenses.queries";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
   head: () => ({ meta: [{ title: "Analytics · FlowBudget AI" }] }),
@@ -39,11 +39,10 @@ function AnalyticsPage() {
 
   const catMap = new Map<string, number>();
   expenses.forEach((e) => catMap.set(e.category, (catMap.get(e.category) || 0) + Number(e.amount)));
-  const palette = ["#111111", "#333", "#555", "#FFD600", "#888", "#aaa", "#222"];
-  const catData = Array.from(catMap.entries()).map(([name, value], i) => ({
+  const catData = Array.from(catMap.entries()).map(([name, value]) => ({
     name,
     value,
-    color: palette[i % palette.length],
+    color: getCategoryColor(name),
   }));
 
   const totalAll = expenses.reduce((s, e) => s + Number(e.amount), 0);

@@ -12,7 +12,7 @@ import {
   Tooltip,
 } from "recharts";
 import { ArrowDownRight, ArrowUpRight, Plus, Sparkles, TrendingDown } from "lucide-react";
-import { expensesQuery, budgetsQuery, fmtMGA } from "@/lib/expenses.queries";
+import { expensesQuery, budgetsQuery, fmtMGA, getCategoryColor } from "@/lib/expenses.queries";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Tableau de bord · FlowBudget AI" }] }),
@@ -50,11 +50,10 @@ function Dashboard() {
   monthExpenses.forEach((e) =>
     catMap.set(e.category, (catMap.get(e.category) || 0) + Number(e.amount)),
   );
-  const palette = ["#111111", "#444444", "#777777", "#FFD600", "#bdbdbd", "#1a1a1a", "#5a5a5a"];
-  const catData = Array.from(catMap.entries()).map(([name, value], i) => ({
+  const catData = Array.from(catMap.entries()).map(([name, value]) => ({
     name,
     value,
-    color: palette[i % palette.length],
+    color: getCategoryColor(name),
   }));
 
   return (
@@ -176,7 +175,10 @@ function Dashboard() {
               {expenses.slice(0, 6).map((e) => (
                 <li key={e.id} className="flex items-center justify-between py-3">
                   <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-xl bg-secondary grid place-items-center text-xs font-medium">
+                    <div
+                      className="size-9 rounded-xl grid place-items-center text-xs font-medium text-white"
+                      style={{ background: getCategoryColor(e.category) }}
+                    >
                       {e.category[0]}
                     </div>
                     <div>
