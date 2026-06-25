@@ -37,7 +37,7 @@ export function getFrenchErrorMessage(error: unknown, fallback = "Une erreur est
     return "Format d'image non accepté. Utilisez JPG, PNG, WebP ou GIF.";
   }
   if (normalized.includes("payload too large") || normalized.includes("exceeded")) {
-    return "La photo est trop lourde. Choisissez une image de 5 Mo maximum.";
+    return "La photo est trop lourde. Choisissez une image de 10 Mo maximum.";
   }
   if (
     normalized.includes("row-level security") ||

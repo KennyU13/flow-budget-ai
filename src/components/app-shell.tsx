@@ -1,40 +1,49 @@
-import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
 import {
-  LayoutDashboard,
-  Receipt,
-  Wallet,
   BarChart3,
-  BrainCircuit,
   Bell,
-  Settings,
+  BrainCircuit,
   CreditCard,
-  LogOut,
-  Sparkles,
-  Search,
-  Menu,
-  X,
-  User,
+  LayoutDashboard,
   Loader2,
+  LogOut,
+  Menu,
+  Receipt,
+  Search,
+  Settings,
+  Sparkles,
+  User,
+  Wallet,
+  X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
 import { getFrenchErrorMessage } from "@/lib/french-errors";
+import {
+  applyLanguage,
+  applyTheme,
+  getStoredLanguage,
+  getStoredTheme,
+  PREFERENCES_EVENT,
+  shellCopy,
+  type AppLanguage,
+} from "@/lib/preferences";
 
 const nav = [
-  { to: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
-  { to: "/depenses", label: "Dépenses", icon: Receipt },
-  { to: "/budgets", label: "Budgets", icon: Wallet },
-  { to: "/analytics", label: "Analytics", icon: BarChart3 },
-  { to: "/ia", label: "IA Financière", icon: BrainCircuit },
-  { to: "/notifications", label: "Notifications", icon: Bell },
+  { to: "/dashboard", labelKey: "dashboard", icon: LayoutDashboard },
+  { to: "/depenses", labelKey: "expenses", icon: Receipt },
+  { to: "/budgets", labelKey: "budgets", icon: Wallet },
+  { to: "/analytics", labelKey: "analytics", icon: BarChart3 },
+  { to: "/ia", labelKey: "ai", icon: BrainCircuit },
+  { to: "/notifications", labelKey: "notifications", icon: Bell },
 ] as const;
 
 const bottomNav = [
-  { to: "/profil", label: "Profil", icon: User },
-  { to: "/parametres", label: "Paramètres", icon: Settings },
-  { to: "/abonnement", label: "Abonnement", icon: CreditCard },
+  { to: "/profil", labelKey: "profile", icon: User },
+  { to: "/parametres", labelKey: "settings", icon: Settings },
+  { to: "/abonnement", labelKey: "subscription", icon: CreditCard },
 ] as const;
 
 type UserProfile = {
@@ -46,6 +55,7 @@ type UserProfile = {
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [language, setLanguage] = useState<AppLanguage>("fr");
   const [profile, setProfile] = useState<UserProfile>({
     nom: "",
     email: "",
@@ -53,15 +63,28 @@ export function AppShell({ children }: { children: ReactNode }) {
   });
   const [signingOut, setSigningOut] = useState(false);
   const navigate = useNavigate();
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
+  const copy = shellCopy[language];
 
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
 
   useEffect(() => {
-    const theme = window.localStorage.getItem("flowbudget:theme") || "light";
-    document.documentElement.classList.toggle("dark", theme === "dark");
+    const syncPreferences = () => {
+      const nextLanguage = getStoredLanguage();
+      setLanguage(nextLanguage);
+      applyLanguage(nextLanguage);
+      applyTheme(getStoredTheme());
+    };
+
+    syncPreferences();
+    window.addEventListener(PREFERENCES_EVENT, syncPreferences);
+    window.addEventListener("storage", syncPreferences);
+    return () => {
+      window.removeEventListener(PREFERENCES_EVENT, syncPreferences);
+      window.removeEventListener("storage", syncPreferences);
+    };
   }, []);
 
   useEffect(() => {
@@ -76,7 +99,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       if (!active) return;
       setProfile({
-        nom: profileData?.nom || data.user.user_metadata?.nom || "Utilisateur",
+        nom: profileData?.nom || data.user.user_metadata?.nom || copy.user,
         email: profileData?.email || data.user.email || "",
         avatar_url: profileData?.avatar_url ?? null,
       });
@@ -84,20 +107,20 @@ export function AppShell({ children }: { children: ReactNode }) {
     return () => {
       active = false;
     };
-  }, [pathname]);
+  }, [copy.user, pathname]);
 
   async function signOut() {
     if (signingOut) return;
     setSigningOut(true);
     try {
-      await qc.cancelQueries();
-      qc.clear();
+      await queryClient.cancelQueries();
+      queryClient.clear();
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      toast.success("Déconnexion réussie.");
+      toast.success(copy.logoutSuccess);
       navigate({ to: "/auth", replace: true });
     } catch (error) {
-      toast.error(getFrenchErrorMessage(error, "Déconnexion impossible."));
+      toast.error(getFrenchErrorMessage(error, copy.logoutError));
     } finally {
       setSigningOut(false);
     }
@@ -117,19 +140,37 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
             FlowBudget
           </Link>
-          <button onClick={() => setMobileOpen(false)} className="lg:hidden" aria-label="Fermer">
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="lg:hidden"
+            aria-label={copy.close}
+          >
             <X className="size-5" />
           </button>
         </div>
+
         <nav className="flex-1 overflow-y-auto p-3 space-y-0.5">
-          {nav.map((it) => (
-            <NavItem key={it.to} {...it} active={pathname === it.to} />
+          {nav.map((item) => (
+            <NavItem
+              key={item.to}
+              to={item.to}
+              label={copy.nav[item.labelKey]}
+              icon={item.icon}
+              active={pathname === item.to}
+            />
           ))}
           <div className="h-px bg-border my-3 mx-3" />
-          {bottomNav.map((it) => (
-            <NavItem key={it.to} {...it} active={pathname === it.to} />
+          {bottomNav.map((item) => (
+            <NavItem
+              key={item.to}
+              to={item.to}
+              label={copy.nav[item.labelKey]}
+              icon={item.icon}
+              active={pathname === item.to}
+            />
           ))}
         </nav>
+
         <div className="p-3 border-t border-border">
           <div className="flex items-center gap-3 px-3 py-2">
             {profile.avatar_url ? (
@@ -144,13 +185,13 @@ export function AppShell({ children }: { children: ReactNode }) {
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{profile.nom || "Utilisateur"}</p>
+              <p className="text-sm font-medium truncate">{profile.nom || copy.user}</p>
               <p className="text-xs text-muted-foreground truncate">{profile.email}</p>
             </div>
             <button
               onClick={signOut}
               disabled={signingOut}
-              title="Se déconnecter"
+              title={copy.logout}
               className="text-muted-foreground hover:text-foreground disabled:opacity-50"
             >
               {signingOut ? (
@@ -173,20 +214,24 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="lg:pl-72">
         <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-xl border-b border-border">
           <div className="px-4 sm:px-6 h-16 flex items-center gap-3 sm:gap-4">
-            <button onClick={() => setMobileOpen(true)} className="lg:hidden" aria-label="Menu">
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="lg:hidden"
+              aria-label={copy.menu}
+            >
               <Menu className="size-5" />
             </button>
             <div className="flex-1 max-w-md relative">
               <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
-                placeholder="Rechercher une dépense, catégorie..."
+                placeholder={copy.search}
                 className="w-full pl-9 pr-3 py-2 rounded-full bg-secondary border border-transparent focus:bg-white focus:border-border outline-none text-sm transition"
               />
             </div>
             <Link
               to="/notifications"
               className="relative size-9 rounded-full hover:bg-secondary grid place-items-center transition"
-              aria-label="Notifications"
+              aria-label={copy.nav.notifications}
             >
               <Bell className="size-4" />
               <span className="absolute right-2 top-2 size-2 rounded-full bg-cta" />

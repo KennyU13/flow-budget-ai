@@ -4,6 +4,16 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getFrenchErrorMessage } from "@/lib/french-errors";
+import {
+  applyLanguage,
+  applyTheme,
+  getStoredLanguage,
+  getStoredTheme,
+  notifyPreferencesChanged,
+  settingsCopy,
+  type AppLanguage,
+  type AppTheme,
+} from "@/lib/preferences";
 
 export const Route = createFileRoute("/_authenticated/parametres")({
   head: () => ({ meta: [{ title: "Paramètres · FlowBudget AI" }] }),
@@ -11,26 +21,47 @@ export const Route = createFileRoute("/_authenticated/parametres")({
 });
 
 function ParametresPage() {
-  const [language, setLanguage] = useState("fr");
+  const [language, setLanguage] = useState<AppLanguage>("fr");
   const [currency, setCurrency] = useState("MGA");
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState<AppTheme>("light");
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [budgetAlerts, setBudgetAlerts] = useState(true);
   const [saving, setSaving] = useState(false);
+  const copy = settingsCopy[language];
 
   useEffect(() => {
-    setLanguage(localStorage.getItem("flowbudget:language") || "fr");
+    const storedLanguage = getStoredLanguage();
+    const storedTheme = getStoredTheme();
+    setLanguage(storedLanguage);
     setCurrency(localStorage.getItem("flowbudget:currency") || "MGA");
-    setTheme(localStorage.getItem("flowbudget:theme") || "light");
+    setTheme(storedTheme);
     setEmailNotifications(localStorage.getItem("flowbudget:emailNotifications") !== "false");
     setPushNotifications(localStorage.getItem("flowbudget:pushNotifications") !== "false");
     setBudgetAlerts(localStorage.getItem("flowbudget:budgetAlerts") !== "false");
+    applyLanguage(storedLanguage);
+    applyTheme(storedTheme);
   }, []);
 
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-  }, [theme]);
+  function updateLanguage(nextLanguage: AppLanguage) {
+    setLanguage(nextLanguage);
+    localStorage.setItem("flowbudget:language", nextLanguage);
+    applyLanguage(nextLanguage);
+    notifyPreferencesChanged();
+  }
+
+  function updateTheme(nextTheme: AppTheme) {
+    setTheme(nextTheme);
+    localStorage.setItem("flowbudget:theme", nextTheme);
+    applyTheme(nextTheme);
+    notifyPreferencesChanged();
+  }
+
+  function updateCurrency(nextCurrency: string) {
+    setCurrency(nextCurrency);
+    localStorage.setItem("flowbudget:currency", nextCurrency);
+    notifyPreferencesChanged();
+  }
 
   async function saveSettings() {
     setSaving(true);
@@ -41,6 +72,9 @@ function ParametresPage() {
       localStorage.setItem("flowbudget:emailNotifications", String(emailNotifications));
       localStorage.setItem("flowbudget:pushNotifications", String(pushNotifications));
       localStorage.setItem("flowbudget:budgetAlerts", String(budgetAlerts));
+      applyLanguage(language);
+      applyTheme(theme);
+      notifyPreferencesChanged();
 
       const {
         data: { user },
@@ -52,9 +86,9 @@ function ParametresPage() {
           .eq("id", user.id);
         if (error) throw error;
       }
-      toast.success("Paramètres enregistrés.");
+      toast.success(copy.saved);
     } catch (error) {
-      toast.error(getFrenchErrorMessage(error, "Impossible d'enregistrer les paramètres."));
+      toast.error(getFrenchErrorMessage(error, copy.saveError));
     } finally {
       setSaving(false);
     }
@@ -64,10 +98,8 @@ function ParametresPage() {
     <div className="space-y-6 max-w-4xl">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl">Paramètres</h1>
-          <p className="text-muted-foreground mt-1">
-            Personnalisez votre expérience FlowBudget AI.
-          </p>
+          <h1 className="text-3xl">{copy.title}</h1>
+          <p className="text-muted-foreground mt-1">{copy.subtitle}</p>
         </div>
         <button
           onClick={saveSettings}
@@ -75,65 +107,67 @@ function ParametresPage() {
           className="inline-flex items-center gap-2 rounded-full bg-cta text-cta-foreground px-4 py-2.5 text-sm font-semibold cta-glow disabled:opacity-60"
         >
           <Save className="size-4" />
-          {saving ? "Enregistrement..." : "Enregistrer"}
+          {saving ? copy.saving : copy.save}
         </button>
       </div>
 
       <section className="grid md:grid-cols-2 gap-4">
-        <SettingCard icon={Globe2} title="Langue" desc="Préférence d'interface.">
-          <select value={language} onChange={(e) => setLanguage(e.target.value)} className="select">
+        <SettingCard icon={Globe2} title={copy.language} desc={copy.languageDesc}>
+          <select
+            value={language}
+            onChange={(e) => updateLanguage(e.target.value as AppLanguage)}
+            className="select"
+          >
             <option value="fr">Français</option>
             <option value="mg">Malagasy</option>
             <option value="en">English</option>
           </select>
         </SettingCard>
-        <SettingCard icon={WalletCards} title="Devise" desc="Format d'affichage des montants.">
-          <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="select">
+        <SettingCard icon={WalletCards} title={copy.currency} desc={copy.currencyDesc}>
+          <select
+            value={currency}
+            onChange={(e) => updateCurrency(e.target.value)}
+            className="select"
+          >
             <option value="MGA">Ariary malgache (MGA)</option>
             <option value="EUR">Euro (EUR)</option>
             <option value="USD">Dollar US (USD)</option>
           </select>
         </SettingCard>
-        <SettingCard icon={Palette} title="Thème" desc="Apparence de l'application.">
+        <SettingCard icon={Palette} title={copy.theme} desc={copy.themeDesc}>
           <div className="grid grid-cols-2 gap-2">
-            <Choice active={theme === "light"} onClick={() => setTheme("light")}>
-              Clair
+            <Choice active={theme === "light"} onClick={() => updateTheme("light")}>
+              {copy.light}
             </Choice>
-            <Choice active={theme === "dark"} onClick={() => setTheme("dark")}>
-              Sombre
+            <Choice active={theme === "dark"} onClick={() => updateTheme("dark")}>
+              {copy.dark}
             </Choice>
           </div>
         </SettingCard>
-        <SettingCard
-          icon={Moon}
-          title="Confort visuel"
-          desc="Le thème sombre réduit la fatigue visuelle."
-        >
-          <p className="text-sm text-muted-foreground">
-            Le thème choisi est appliqué immédiatement sur cet appareil.
-          </p>
+        <SettingCard icon={Moon} title={copy.comfort} desc={copy.comfortDesc}>
+          <p className="text-sm text-muted-foreground">{copy.comfortText}</p>
         </SettingCard>
       </section>
 
       <section className="rounded-2xl bg-white border border-border divide-y divide-border">
         <ToggleRow
           icon={Bell}
-          title="Notifications email"
-          desc="Recevoir les résumés et alertes importantes."
+          title={copy.emailNotifications}
+          desc={copy.emailNotificationsDesc}
           checked={emailNotifications}
           onChange={setEmailNotifications}
         />
         <ToggleRow
           icon={Bell}
-          title="Notifications dans l'application"
-          desc="Afficher les alertes de budget dans FlowBudget."
+          title={copy.appNotifications}
+          desc={copy.appNotificationsDesc}
           checked={pushNotifications}
           onChange={setPushNotifications}
         />
         <ToggleRow
           icon={WalletCards}
-          title="Alertes de dépassement"
-          desc="Prévenir lorsqu'une catégorie dépasse le seuil prévu."
+          title={copy.budgetAlerts}
+          desc={copy.budgetAlertsDesc}
           checked={budgetAlerts}
           onChange={setBudgetAlerts}
         />
@@ -145,7 +179,8 @@ function ParametresPage() {
           padding: .65rem .85rem;
           border-radius: .75rem;
           border: 1px solid var(--color-border);
-          background: white;
+          background: var(--color-card);
+          color: var(--color-foreground);
           outline: none;
           font-size: .9rem;
         }

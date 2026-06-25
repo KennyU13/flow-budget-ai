@@ -65,8 +65,8 @@ function ProfilPage() {
       toast.error("Choisissez une image valide.");
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("La photo ne doit pas dépasser 5 Mo.");
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("La photo ne doit pas dépasser 10 Mo.");
       return;
     }
 

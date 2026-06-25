@@ -3,7 +3,7 @@ VALUES (
   'avatars',
   'avatars',
   true,
-  5242880,
+  10485760,
   ARRAY['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
 )
 ON CONFLICT (id) DO NOTHING;
