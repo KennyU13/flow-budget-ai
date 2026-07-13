@@ -29,10 +29,10 @@ BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM pg_constraint
     WHERE conrelid = 'public.profiles'::regclass
-      AND conname = 'profiles_monthly_savings_goal_check'
+      AND conname = 'profiles_savings_goal_check'
   ) THEN
     ALTER TABLE public.profiles
-      ADD CONSTRAINT profiles_monthly_savings_goal_check
+      ADD CONSTRAINT profiles_savings_goal_check
       CHECK (monthly_savings_goal IS NULL OR monthly_savings_goal >= 0);
   END IF;
 
@@ -59,10 +59,10 @@ BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM pg_constraint
     WHERE conrelid = 'public.profiles'::regclass
-      AND conname = 'profiles_employment_status_check'
+      AND conname = 'profiles_employment_check'
   ) THEN
     ALTER TABLE public.profiles
-      ADD CONSTRAINT profiles_employment_status_check
+      ADD CONSTRAINT profiles_employment_check
       CHECK (
         employment_status IS NULL
         OR employment_status IN (
@@ -91,6 +91,23 @@ $$;
 
 -- CURRENT_DATE is not immutable, so it is unsuitable for a durable CHECK
 -- constraint. A trigger evaluates the rule at each write instead.
+-- The column is new and therefore NULL for existing rows. If this migration is
+-- replayed after the column has been populated, refuse any pre-existing future
+-- date explicitly before enabling the trigger.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM public.profiles
+    WHERE birth_date > CURRENT_DATE
+  ) THEN
+    RAISE EXCEPTION 'existing profile has a birth_date in the future'
+      USING ERRCODE = '23514',
+            CONSTRAINT = 'profiles_birth_date_check';
+  END IF;
+END
+$$;
+
 CREATE OR REPLACE FUNCTION public.validate_profile_birth_date()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -109,6 +126,6 @@ $$;
 
 DROP TRIGGER IF EXISTS validate_profile_birth_date ON public.profiles;
 CREATE TRIGGER validate_profile_birth_date
-BEFORE INSERT OR UPDATE OF birth_date ON public.profiles
+BEFORE INSERT OR UPDATE ON public.profiles
 FOR EACH ROW
 EXECUTE FUNCTION public.validate_profile_birth_date();
