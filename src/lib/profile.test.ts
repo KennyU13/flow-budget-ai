@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { getAiProfileContext, getProfileCompletion, profileSchema, type Profile } from "./profile";
 
@@ -21,6 +21,10 @@ const emptyProfile: Profile = {
   ai_profile_consent: false,
 };
 
+afterEach(() => {
+  vi.useRealTimers();
+});
+
 describe("profileSchema", () => {
   it("normalizes optional text values", () => {
     const result = profileSchema.parse({
@@ -37,7 +41,7 @@ describe("profileSchema", () => {
     const result = profileSchema.safeParse({
       ...emptyProfile,
       first_name: "a".repeat(100),
-      phone: "+261 (34) 12-345-67",
+      phone: "+261 34 12 345 67",
       bio: "b".repeat(300),
       dependents: 20,
       monthly_savings_goal: 0,
@@ -49,6 +53,18 @@ describe("profileSchema", () => {
 
   it("rejects a future birth date", () => {
     expect(profileSchema.safeParse({ ...emptyProfile, birth_date: "2999-01-01" }).success).toBe(
+      false,
+    );
+  });
+
+  it("uses Antananarivo's calendar date around the UTC day boundary", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-12T21:30:00.000Z"));
+
+    expect(profileSchema.safeParse({ ...emptyProfile, birth_date: "2026-07-13" }).success).toBe(
+      true,
+    );
+    expect(profileSchema.safeParse({ ...emptyProfile, birth_date: "2026-07-14" }).success).toBe(
       false,
     );
   });
@@ -65,14 +81,33 @@ describe("profileSchema", () => {
 
   it.each([
     ["first_name", "a".repeat(101)],
+    ["last_name", "a".repeat(101)],
+    ["nom", "a".repeat(101)],
+    ["country", "a".repeat(101)],
+    ["city", "a".repeat(101)],
+    ["profession", "a".repeat(101)],
     ["phone", "123 extension"],
     ["phone", "+() -"],
+    ["phone", "261-34"],
+    ["phone", "261.34"],
+    ["phone", "261 (34)"],
+    ["phone", "261+34"],
+    ["phone", "++261"],
     ["phone", "1".repeat(31)],
     ["bio", "b".repeat(301)],
     ["dependents", -1],
     ["dependents", 1.5],
     ["monthly_savings_goal", -0.01],
   ])("rejects an invalid boundary for %s", (field, value) => {
+    expect(profileSchema.safeParse({ ...emptyProfile, [field]: value }).success).toBe(false);
+  });
+
+  it.each([
+    ["employment_status", "contractor"],
+    ["income_range", "500k"],
+    ["language", "de"],
+    ["devise", "GBP"],
+  ])("rejects an unknown %s enum value", (field, value) => {
     expect(profileSchema.safeParse({ ...emptyProfile, [field]: value }).success).toBe(false);
   });
 });

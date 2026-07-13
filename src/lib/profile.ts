@@ -28,6 +28,19 @@ const optionalText = (maximum: number) =>
     return normalized === "" ? null : normalized;
   }, z.string().max(maximum).nullable().default(null));
 
+function getAntananarivoCalendarDate(now: Date): string {
+  const parts = new Intl.DateTimeFormat("en", {
+    timeZone: "Indian/Antananarivo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((candidate) => candidate.type === type)?.value;
+
+  return `${part("year")}-${part("month")}-${part("day")}`;
+}
+
 const birthDateSchema = optionalText(10).refine(
   (value) => {
     if (value === null) return true;
@@ -37,14 +50,14 @@ const birthDateSchema = optionalText(10).refine(
     return (
       !Number.isNaN(date.valueOf()) &&
       date.toISOString().slice(0, 10) === value &&
-      date <= new Date()
+      value <= getAntananarivoCalendarDate(new Date())
     );
   },
   { message: "La date de naissance ne peut pas être future" },
 );
 
 const phoneSchema = optionalText(30).refine(
-  (value) => value === null || (/^[\d\s+().-]+$/.test(value) && /\d/.test(value)),
+  (value) => value === null || /^\+?[0-9 ]*[0-9][0-9 ]*$/.test(value),
   { message: "Le numéro de téléphone contient des caractères invalides" },
 );
 
