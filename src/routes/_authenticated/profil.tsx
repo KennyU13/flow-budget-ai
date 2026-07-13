@@ -50,6 +50,7 @@ export function ProfilPage() {
   const [saved, setSaved] = useState<Profile>(emptyProfile);
   const [draft, setDraft] = useState<Profile>(emptyProfile);
   const [errors, setErrors] = useState<ProfileErrors>({});
+  const [loadError, setLoadError] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -60,7 +61,7 @@ export function ProfilPage() {
         const {
           data: { user },
         } = await supabase.auth.getUser();
-        if (!user) return;
+        if (!user) throw new Error("Session expirée.");
 
         setEmail(user.email ?? "");
         const { data, error } = await supabase
@@ -85,6 +86,7 @@ export function ProfilPage() {
         setSaved(parsed.data);
         setDraft(parsed.data);
       } catch (error) {
+        setLoadError(true);
         toast.error(getFrenchErrorMessage(error, "Impossible de charger le profil."));
       } finally {
         setInitializing(false);
@@ -99,6 +101,7 @@ export function ProfilPage() {
 
   async function save(event: React.FormEvent) {
     event.preventDefault();
+    if (loadError) return;
     const result = profileSchema.safeParse(draft);
     if (!result.success) {
       const nextErrors: ProfileErrors = {};
@@ -209,6 +212,17 @@ export function ProfilPage() {
         </p>
       </div>
 
+      {loadError ? (
+        <div
+          role="alert"
+          aria-label="Profil indisponible"
+          className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+        >
+          Le profil enregistré n'a pas pu être chargé de manière sûre. Le formulaire reste bloqué et
+          aucune donnée ne sera remplacée. Réessayez après avoir actualisé la page.
+        </div>
+      ) : null}
+
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[280px_minmax(0,1fr)]">
         <aside className="h-fit rounded-2xl border border-border bg-white p-4 sm:p-6">
           <div className="flex flex-col items-center text-center">
@@ -227,7 +241,7 @@ export function ProfilPage() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={uploading || initializing || saving}
+                disabled={uploading || initializing || saving || loadError}
                 className="absolute -bottom-1 -right-1 grid size-11 place-items-center rounded-full border-4 border-white bg-cta text-cta-foreground disabled:opacity-60"
                 aria-label="Changer la photo"
               >
@@ -241,7 +255,7 @@ export function ProfilPage() {
             <input
               ref={fileInputRef}
               type="file"
-              disabled={uploading || initializing || saving}
+              disabled={uploading || initializing || saving || loadError}
               accept="image/png,image/jpeg,image/webp,image/gif"
               className="hidden"
               onChange={(event) => {
@@ -290,7 +304,7 @@ export function ProfilPage() {
         </aside>
 
         <form onSubmit={save} className="min-w-0" noValidate>
-          <fieldset disabled={initializing || saving} className="min-w-0 space-y-5">
+          <fieldset disabled={initializing || saving || loadError} className="min-w-0 space-y-5">
             <ProfileSection
               title="Identité"
               description="Les informations qui décrivent votre compte."

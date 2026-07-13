@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   updateError: null as Error | null,
   loadPromise: null as Promise<{ data: typeof storedProfile; error: null }> | null,
+  profileData: null as Record<string, unknown> | null,
   updatePromise: null as Promise<{ error: Error | null }> | null,
   update: vi.fn(),
   notify: vi.fn(),
@@ -41,7 +42,9 @@ vi.mock("@/integrations/supabase/client", () => ({
       select: vi.fn(() => ({
         eq: vi.fn(() => ({
           maybeSingle: vi.fn(
-            () => mocks.loadPromise ?? Promise.resolve({ data: storedProfile, error: null }),
+            () =>
+              mocks.loadPromise ??
+              Promise.resolve({ data: mocks.profileData ?? storedProfile, error: null }),
           ),
         })),
       })),
@@ -73,6 +76,7 @@ describe("ProfilPage", () => {
   beforeEach(() => {
     mocks.updateError = null;
     mocks.loadPromise = null;
+    mocks.profileData = null;
     mocks.updatePromise = null;
     vi.clearAllMocks();
     localStorage.clear();
@@ -158,5 +162,20 @@ describe("ProfilPage", () => {
     expect(progress).toHaveAttribute("aria-valuemin", "0");
     expect(progress).toHaveAttribute("aria-valuemax", "100");
     expect(progress).toHaveAttribute("aria-valuenow", "80");
+  });
+
+  it("bloque toute modification lorsqu'un ancien profil ne peut pas être chargé sans perte", async () => {
+    mocks.profileData = { ...storedProfile, devise: "CHF" };
+    render(<ProfilPage />);
+
+    expect(await screen.findByRole("alert", { name: "Profil indisponible" })).toHaveTextContent(
+      "aucune donnée ne sera remplacée",
+    );
+    const firstName = screen.getByLabelText("Prénom");
+    expect(firstName).toBeDisabled();
+    fireEvent.change(firstName, { target: { value: "Écrasement" } });
+    expect(screen.getByRole("button", { name: "Enregistrer" })).toBeDisabled();
+    fireEvent.submit(firstName.closest("form")!);
+    expect(mocks.update).not.toHaveBeenCalled();
   });
 });
