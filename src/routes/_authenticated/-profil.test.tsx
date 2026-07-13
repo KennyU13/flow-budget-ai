@@ -3,6 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   updateError: null as Error | null,
+  loadPromise: null as Promise<{ data: typeof storedProfile; error: null }> | null,
+  updatePromise: null as Promise<{ error: Error | null }> | null,
   update: vi.fn(),
   notify: vi.fn(),
   toastSuccess: vi.fn(),
@@ -38,12 +40,16 @@ vi.mock("@/integrations/supabase/client", () => ({
     from: vi.fn(() => ({
       select: vi.fn(() => ({
         eq: vi.fn(() => ({
-          maybeSingle: vi.fn(async () => ({ data: storedProfile, error: null })),
+          maybeSingle: vi.fn(
+            () => mocks.loadPromise ?? Promise.resolve({ data: storedProfile, error: null }),
+          ),
         })),
       })),
       update: (payload: unknown) => {
         mocks.update(payload);
-        return { eq: vi.fn(async () => ({ error: mocks.updateError })) };
+        return {
+          eq: vi.fn(() => mocks.updatePromise ?? Promise.resolve({ error: mocks.updateError })),
+        };
       },
     })),
     storage: { from: vi.fn() },
@@ -66,6 +72,8 @@ describe("ProfilPage", () => {
 
   beforeEach(() => {
     mocks.updateError = null;
+    mocks.loadPromise = null;
+    mocks.updatePromise = null;
     vi.clearAllMocks();
     localStorage.clear();
   });
@@ -101,5 +109,54 @@ describe("ProfilPage", () => {
     await waitFor(() => expect(mocks.toastError).toHaveBeenCalled());
     expect(firstName).toHaveValue("Brouillon");
     expect(screen.getByRole("button", { name: "Enregistrer" })).not.toBeDisabled();
+  });
+
+  it("désactive tous les contrôles interactifs pendant le chargement initial", () => {
+    mocks.loadPromise = new Promise(() => undefined);
+    render(<ProfilPage />);
+
+    const controls = [
+      ...screen.getAllByRole("button"),
+      ...screen.getAllByRole("textbox"),
+      ...screen.getAllByRole("combobox"),
+      ...screen.getAllByRole("spinbutton"),
+      ...screen.getAllByRole("checkbox"),
+    ];
+    expect(controls.length).toBeGreaterThan(1);
+    for (const control of controls) expect(control).toBeDisabled();
+  });
+
+  it("verrouille le formulaire pendant la sauvegarde puis conserve les valeurs", async () => {
+    let resolveUpdate!: (value: { error: null }) => void;
+    mocks.updatePromise = new Promise((resolve) => {
+      resolveUpdate = resolve;
+    });
+    render(<ProfilPage />);
+
+    const firstName = await screen.findByLabelText("Prénom");
+    fireEvent.change(firstName, { target: { value: "Après sauvegarde" } });
+    fireEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
+
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Enregistrement..." })).toBeDisabled(),
+    );
+    const form = firstName.closest("form");
+    expect(form).not.toBeNull();
+    for (const control of Array.from(form!.querySelectorAll("input, select, textarea, button"))) {
+      expect(control).toBeDisabled();
+    }
+
+    resolveUpdate({ error: null });
+    await waitFor(() => expect(screen.getByRole("button", { name: "Enregistrer" })).toBeDisabled());
+    expect(firstName).toHaveValue("Après sauvegarde");
+  });
+
+  it("expose la complétion comme une barre de progression accessible", async () => {
+    render(<ProfilPage />);
+
+    const progress = await screen.findByRole("progressbar", { name: "Profil complété" });
+    expect(progress).toHaveAttribute("aria-valuemin", "0");
+    expect(progress).toHaveAttribute("aria-valuemax", "100");
+    expect(progress).toHaveAttribute("aria-valuenow", "80");
   });
 });

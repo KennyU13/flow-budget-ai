@@ -198,6 +198,7 @@ export function ProfilPage() {
   const displayName = draft.nom || [draft.first_name, draft.last_name].filter(Boolean).join(" ");
   const initial = (displayName || email || "U").trim()[0]?.toUpperCase() ?? "U";
   const dirty = !sameProfile(draft, saved);
+  const completion = getProfileCompletion(draft);
 
   return (
     <div className="max-w-6xl space-y-6 overflow-x-hidden">
@@ -226,7 +227,7 @@ export function ProfilPage() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
+                disabled={uploading || initializing || saving}
                 className="absolute -bottom-1 -right-1 grid size-11 place-items-center rounded-full border-4 border-white bg-cta text-cta-foreground disabled:opacity-60"
                 aria-label="Changer la photo"
               >
@@ -240,6 +241,7 @@ export function ProfilPage() {
             <input
               ref={fileInputRef}
               type="file"
+              disabled={uploading || initializing || saving}
               accept="image/png,image/jpeg,image/webp,image/gif"
               className="hidden"
               onChange={(event) => {
@@ -259,12 +261,19 @@ export function ProfilPage() {
           <div className="mt-6 rounded-xl bg-secondary p-4 text-sm">
             <div className="flex items-center justify-between gap-3 font-medium">
               <span>Profil complété</span>
-              <span>{getProfileCompletion(draft)}%</span>
+              <span>{completion}%</span>
             </div>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-border">
+            <div
+              role="progressbar"
+              aria-label="Profil complété"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={completion}
+              className="mt-2 h-2 overflow-hidden rounded-full bg-border"
+            >
               <div
                 className="h-full rounded-full bg-cta transition-[width]"
-                style={{ width: `${getProfileCompletion(draft)}%` }}
+                style={{ width: `${completion}%` }}
               />
             </div>
           </div>
@@ -280,249 +289,253 @@ export function ProfilPage() {
           </div>
         </aside>
 
-        <form onSubmit={save} className="min-w-0 space-y-5" noValidate>
-          <ProfileSection
-            title="Identité"
-            description="Les informations qui décrivent votre compte."
-          >
-            <ProfileField label="Email" description="Adresse issue de votre compte Supabase.">
-              <input id="email" type="email" disabled value={email} className={fieldClass} />
-            </ProfileField>
-            <ProfileField label="Nom affiché" error={errors.nom}>
-              <input
-                id="display-name"
-                value={draft.nom ?? ""}
-                onChange={(event) => updateField("nom", event.target.value)}
-                maxLength={100}
-                className={fieldClass}
-              />
-            </ProfileField>
-            <ProfileField label="Prénom" error={errors.first_name}>
-              <input
-                id="first-name"
-                value={draft.first_name ?? ""}
-                onChange={(event) => updateField("first_name", event.target.value)}
-                maxLength={100}
-                className={fieldClass}
-              />
-            </ProfileField>
-            <ProfileField label="Nom" error={errors.last_name}>
-              <input
-                id="last-name"
-                value={draft.last_name ?? ""}
-                onChange={(event) => updateField("last_name", event.target.value)}
-                maxLength={100}
-                className={fieldClass}
-              />
-            </ProfileField>
-            <ProfileField
-              label="Date de naissance"
-              description="Cette donnée n'est jamais transmise à l'IA."
-              error={errors.birth_date}
+        <form onSubmit={save} className="min-w-0" noValidate>
+          <fieldset disabled={initializing || saving} className="min-w-0 space-y-5">
+            <ProfileSection
+              title="Identité"
+              description="Les informations qui décrivent votre compte."
             >
-              <input
-                id="birth-date"
-                type="date"
-                value={draft.birth_date ?? ""}
-                onChange={(event) => updateField("birth_date", event.target.value || null)}
-                className={fieldClass}
-              />
-            </ProfileField>
-            <ProfileField
-              label="Téléphone"
-              description="Cette donnée n'est jamais transmise à l'IA."
-              error={errors.phone}
-            >
-              <input
-                id="phone"
-                type="tel"
-                value={draft.phone ?? ""}
-                onChange={(event) => updateField("phone", event.target.value)}
-                maxLength={30}
-                placeholder="+261 34 00 000 00"
-                className={fieldClass}
-              />
-            </ProfileField>
-          </ProfileSection>
+              <ProfileField label="Email" description="Adresse issue de votre compte Supabase.">
+                <input id="email" type="email" disabled value={email} className={fieldClass} />
+              </ProfileField>
+              <ProfileField label="Nom affiché" error={errors.nom}>
+                <input
+                  id="display-name"
+                  value={draft.nom ?? ""}
+                  onChange={(event) => updateField("nom", event.target.value)}
+                  maxLength={100}
+                  className={fieldClass}
+                />
+              </ProfileField>
+              <ProfileField label="Prénom" error={errors.first_name}>
+                <input
+                  id="first-name"
+                  value={draft.first_name ?? ""}
+                  onChange={(event) => updateField("first_name", event.target.value)}
+                  maxLength={100}
+                  className={fieldClass}
+                />
+              </ProfileField>
+              <ProfileField label="Nom" error={errors.last_name}>
+                <input
+                  id="last-name"
+                  value={draft.last_name ?? ""}
+                  onChange={(event) => updateField("last_name", event.target.value)}
+                  maxLength={100}
+                  className={fieldClass}
+                />
+              </ProfileField>
+              <ProfileField
+                label="Date de naissance"
+                description="Cette donnée n'est jamais transmise à l'IA."
+                error={errors.birth_date}
+              >
+                <input
+                  id="birth-date"
+                  type="date"
+                  value={draft.birth_date ?? ""}
+                  onChange={(event) => updateField("birth_date", event.target.value || null)}
+                  className={fieldClass}
+                />
+              </ProfileField>
+              <ProfileField
+                label="Téléphone"
+                description="Cette donnée n'est jamais transmise à l'IA."
+                error={errors.phone}
+              >
+                <input
+                  id="phone"
+                  type="tel"
+                  value={draft.phone ?? ""}
+                  onChange={(event) => updateField("phone", event.target.value)}
+                  maxLength={30}
+                  placeholder="+261 34 00 000 00"
+                  className={fieldClass}
+                />
+              </ProfileField>
+            </ProfileSection>
 
-          <ProfileSection
-            title="Localisation et activité"
-            description="Toutes ces informations restent facultatives."
-          >
-            <ProfileField label="Pays" error={errors.country}>
-              <input
-                id="country"
-                value={draft.country ?? ""}
-                onChange={(event) => updateField("country", event.target.value)}
-                maxLength={100}
-                className={fieldClass}
-              />
-            </ProfileField>
-            <ProfileField label="Ville" error={errors.city}>
-              <input
-                id="city"
-                value={draft.city ?? ""}
-                onChange={(event) => updateField("city", event.target.value)}
-                maxLength={100}
-                className={fieldClass}
-              />
-            </ProfileField>
-            <ProfileField label="Profession" error={errors.profession}>
-              <input
-                id="profession"
-                value={draft.profession ?? ""}
-                onChange={(event) => updateField("profession", event.target.value)}
-                maxLength={100}
-                className={fieldClass}
-              />
-            </ProfileField>
-            <ProfileField label="Situation professionnelle" error={errors.employment_status}>
-              <select
-                id="employment-status"
-                value={draft.employment_status ?? ""}
-                onChange={(event) =>
-                  updateField(
-                    "employment_status",
-                    (event.target.value || null) as Profile["employment_status"],
-                  )
-                }
-                className={fieldClass}
-              >
-                <option value="">Non renseignée</option>
-                <option value="student">Étudiant</option>
-                <option value="employed">Salarié</option>
-                <option value="self_employed">Indépendant</option>
-                <option value="unemployed">Sans emploi</option>
-                <option value="retired">Retraité</option>
-                <option value="other">Autre</option>
-              </select>
-            </ProfileField>
-            <ProfileField label="Biographie" error={errors.bio} className="sm:col-span-2">
-              <textarea
-                id="bio"
-                value={draft.bio ?? ""}
-                onChange={(event) => updateField("bio", event.target.value)}
-                maxLength={300}
-                rows={4}
-                className={fieldClass}
-              />
-            </ProfileField>
-            <p
-              className="-mt-2 text-right text-xs text-muted-foreground sm:col-span-2"
-              aria-live="polite"
+            <ProfileSection
+              title="Localisation et activité"
+              description="Toutes ces informations restent facultatives."
             >
-              {(draft.bio ?? "").length}/300
-            </p>
-          </ProfileSection>
+              <ProfileField label="Pays" error={errors.country}>
+                <input
+                  id="country"
+                  value={draft.country ?? ""}
+                  onChange={(event) => updateField("country", event.target.value)}
+                  maxLength={100}
+                  className={fieldClass}
+                />
+              </ProfileField>
+              <ProfileField label="Ville" error={errors.city}>
+                <input
+                  id="city"
+                  value={draft.city ?? ""}
+                  onChange={(event) => updateField("city", event.target.value)}
+                  maxLength={100}
+                  className={fieldClass}
+                />
+              </ProfileField>
+              <ProfileField label="Profession" error={errors.profession}>
+                <input
+                  id="profession"
+                  value={draft.profession ?? ""}
+                  onChange={(event) => updateField("profession", event.target.value)}
+                  maxLength={100}
+                  className={fieldClass}
+                />
+              </ProfileField>
+              <ProfileField label="Situation professionnelle" error={errors.employment_status}>
+                <select
+                  id="employment-status"
+                  value={draft.employment_status ?? ""}
+                  onChange={(event) =>
+                    updateField(
+                      "employment_status",
+                      (event.target.value || null) as Profile["employment_status"],
+                    )
+                  }
+                  className={fieldClass}
+                >
+                  <option value="">Non renseignée</option>
+                  <option value="student">Étudiant</option>
+                  <option value="employed">Salarié</option>
+                  <option value="self_employed">Indépendant</option>
+                  <option value="unemployed">Sans emploi</option>
+                  <option value="retired">Retraité</option>
+                  <option value="other">Autre</option>
+                </select>
+              </ProfileField>
+              <ProfileField label="Biographie" error={errors.bio} className="sm:col-span-2">
+                <textarea
+                  id="bio"
+                  value={draft.bio ?? ""}
+                  onChange={(event) => updateField("bio", event.target.value)}
+                  maxLength={300}
+                  rows={4}
+                  className={fieldClass}
+                />
+              </ProfileField>
+              <p
+                className="-mt-2 text-right text-xs text-muted-foreground sm:col-span-2"
+                aria-live="polite"
+              >
+                {(draft.bio ?? "").length}/300
+              </p>
+            </ProfileSection>
 
-          <ProfileSection
-            title="Profil financier"
-            description="Ces données permettent de personnaliser vos objectifs."
-          >
-            <ProfileField label="Tranche de revenus mensuels" error={errors.income_range}>
-              <select
-                id="income-range"
-                value={draft.income_range ?? ""}
-                onChange={(event) =>
-                  updateField(
-                    "income_range",
-                    (event.target.value || null) as Profile["income_range"],
-                  )
-                }
-                className={fieldClass}
-              >
-                <option value="">Non renseignée</option>
-                <option value="under_500k">Moins de 500 000 Ar</option>
-                <option value="500k_1500k">500 000 à 1 500 000 Ar</option>
-                <option value="1500k_3000k">1 500 000 à 3 000 000 Ar</option>
-                <option value="3000k_5000k">3 000 000 à 5 000 000 Ar</option>
-                <option value="over_5000k">Plus de 5 000 000 Ar</option>
-                <option value="prefer_not_to_say">Préfère ne pas répondre</option>
-              </select>
-            </ProfileField>
-            <ProfileField label="Objectif d'épargne mensuel" error={errors.monthly_savings_goal}>
-              <input
-                id="savings-goal"
-                type="number"
-                min="0"
-                step="0.01"
-                value={draft.monthly_savings_goal ?? ""}
-                onChange={(event) =>
-                  updateField(
-                    "monthly_savings_goal",
-                    event.target.value === "" ? null : event.target.valueAsNumber,
-                  )
-                }
-                className={fieldClass}
-              />
-            </ProfileField>
-            <ProfileField label="Personnes à charge" error={errors.dependents}>
-              <input
-                id="dependents"
-                type="number"
-                min="0"
-                max="20"
-                step="1"
-                value={draft.dependents ?? ""}
-                onChange={(event) =>
-                  updateField(
-                    "dependents",
-                    event.target.value === "" ? null : event.target.valueAsNumber,
-                  )
-                }
-                className={fieldClass}
-              />
-            </ProfileField>
-            <ProfileField label="Devise préférée" error={errors.devise}>
-              <select
-                id="currency"
-                value={draft.devise ?? "MGA"}
-                onChange={(event) => updateField("devise", event.target.value as Profile["devise"])}
-                className={fieldClass}
-              >
-                <option value="MGA">Ariary malgache (MGA)</option>
-                <option value="EUR">Euro (EUR)</option>
-                <option value="USD">Dollar US (USD)</option>
-              </select>
-            </ProfileField>
-            <ProfileField label="Langue préférée" error={errors.language}>
-              <select
-                id="language"
-                value={draft.language ?? "fr"}
-                onChange={(event) =>
-                  updateField("language", event.target.value as Profile["language"])
-                }
-                className={fieldClass}
-              >
-                <option value="fr">Français</option>
-                <option value="mg">Malagasy</option>
-                <option value="en">English</option>
-              </select>
-            </ProfileField>
-            <ProfileField
-              label="Personnalisation par l'IA"
-              description="Avec votre accord, Gemini utilise uniquement la tranche de revenus, l'objectif d'épargne, la situation professionnelle et le nombre de personnes à charge. Vous pouvez retirer cet accord à tout moment."
-              className="sm:col-span-2"
+            <ProfileSection
+              title="Profil financier"
+              description="Ces données permettent de personnaliser vos objectifs."
             >
-              <input
-                id="ai-profile-consent"
-                type="checkbox"
-                checked={draft.ai_profile_consent}
-                onChange={(event) => updateField("ai_profile_consent", event.target.checked)}
-                className="size-5 accent-foreground"
-              />
-            </ProfileField>
-          </ProfileSection>
+              <ProfileField label="Tranche de revenus mensuels" error={errors.income_range}>
+                <select
+                  id="income-range"
+                  value={draft.income_range ?? ""}
+                  onChange={(event) =>
+                    updateField(
+                      "income_range",
+                      (event.target.value || null) as Profile["income_range"],
+                    )
+                  }
+                  className={fieldClass}
+                >
+                  <option value="">Non renseignée</option>
+                  <option value="under_500k">Moins de 500 000 Ar</option>
+                  <option value="500k_1500k">500 000 à 1 500 000 Ar</option>
+                  <option value="1500k_3000k">1 500 000 à 3 000 000 Ar</option>
+                  <option value="3000k_5000k">3 000 000 à 5 000 000 Ar</option>
+                  <option value="over_5000k">Plus de 5 000 000 Ar</option>
+                  <option value="prefer_not_to_say">Préfère ne pas répondre</option>
+                </select>
+              </ProfileField>
+              <ProfileField label="Objectif d'épargne mensuel" error={errors.monthly_savings_goal}>
+                <input
+                  id="savings-goal"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={draft.monthly_savings_goal ?? ""}
+                  onChange={(event) =>
+                    updateField(
+                      "monthly_savings_goal",
+                      event.target.value === "" ? null : event.target.valueAsNumber,
+                    )
+                  }
+                  className={fieldClass}
+                />
+              </ProfileField>
+              <ProfileField label="Personnes à charge" error={errors.dependents}>
+                <input
+                  id="dependents"
+                  type="number"
+                  min="0"
+                  max="20"
+                  step="1"
+                  value={draft.dependents ?? ""}
+                  onChange={(event) =>
+                    updateField(
+                      "dependents",
+                      event.target.value === "" ? null : event.target.valueAsNumber,
+                    )
+                  }
+                  className={fieldClass}
+                />
+              </ProfileField>
+              <ProfileField label="Devise préférée" error={errors.devise}>
+                <select
+                  id="currency"
+                  value={draft.devise ?? "MGA"}
+                  onChange={(event) =>
+                    updateField("devise", event.target.value as Profile["devise"])
+                  }
+                  className={fieldClass}
+                >
+                  <option value="MGA">Ariary malgache (MGA)</option>
+                  <option value="EUR">Euro (EUR)</option>
+                  <option value="USD">Dollar US (USD)</option>
+                </select>
+              </ProfileField>
+              <ProfileField label="Langue préférée" error={errors.language}>
+                <select
+                  id="language"
+                  value={draft.language ?? "fr"}
+                  onChange={(event) =>
+                    updateField("language", event.target.value as Profile["language"])
+                  }
+                  className={fieldClass}
+                >
+                  <option value="fr">Français</option>
+                  <option value="mg">Malagasy</option>
+                  <option value="en">English</option>
+                </select>
+              </ProfileField>
+              <ProfileField
+                label="Personnalisation par l'IA"
+                description="Avec votre accord, Gemini utilise uniquement la tranche de revenus, l'objectif d'épargne, la situation professionnelle et le nombre de personnes à charge. Vous pouvez retirer cet accord à tout moment."
+                className="sm:col-span-2"
+              >
+                <input
+                  id="ai-profile-consent"
+                  type="checkbox"
+                  checked={draft.ai_profile_consent}
+                  onChange={(event) => updateField("ai_profile_consent", event.target.checked)}
+                  className="size-5 accent-foreground"
+                />
+              </ProfileField>
+            </ProfileSection>
 
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              disabled={initializing || saving || !dirty}
-              className="min-h-11 w-full rounded-full bg-cta px-5 py-2.5 text-sm font-semibold text-cta-foreground cta-glow disabled:opacity-60 sm:w-auto"
-            >
-              {saving ? "Enregistrement..." : "Enregistrer"}
-            </button>
-          </div>
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={initializing || saving || !dirty}
+                className="min-h-11 w-full rounded-full bg-cta px-5 py-2.5 text-sm font-semibold text-cta-foreground cta-glow disabled:opacity-60 sm:w-auto"
+              >
+                {saving ? "Enregistrement..." : "Enregistrer"}
+              </button>
+            </div>
+          </fieldset>
         </form>
       </div>
     </div>
