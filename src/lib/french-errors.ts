@@ -1,6 +1,25 @@
 export function getFrenchErrorMessage(error: unknown, fallback = "Une erreur est survenue.") {
-  const message = error instanceof Error ? error.message : String(error || "");
+  const errorRecord =
+    typeof error === "object" && error !== null ? (error as Record<string, unknown>) : null;
+  const code = typeof errorRecord?.code === "string" ? errorRecord.code : "";
+  const message =
+    error instanceof Error
+      ? error.message
+      : typeof errorRecord?.message === "string"
+        ? errorRecord.message
+        : typeof error === "string"
+          ? error
+          : "";
   const normalized = message.toLowerCase();
+
+  if (
+    code === "42703" ||
+    (normalized.includes("column") &&
+      normalized.includes("profiles") &&
+      normalized.includes("does not exist"))
+  ) {
+    return "La base Supabase n'est pas encore à jour. Appliquez la migration du profil financier, puis actualisez la page.";
+  }
 
   if (normalized.includes("missing oauth secret")) {
     return "La connexion Google n'est pas encore configurée côté Supabase. Ajoutez le Client ID et le Client Secret Google dans Authentication > Providers > Google.";

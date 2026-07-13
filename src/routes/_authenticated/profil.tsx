@@ -87,7 +87,9 @@ export function ProfilPage() {
         setDraft(parsed.data);
       } catch (error) {
         setLoadError(true);
-        toast.error(getFrenchErrorMessage(error, "Impossible de charger le profil."));
+        toast.error(getFrenchErrorMessage(error, "Impossible de charger le profil."), {
+          id: "profile-load-error",
+        });
       } finally {
         setInitializing(false);
       }
