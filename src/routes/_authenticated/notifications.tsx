@@ -53,7 +53,7 @@ function NotificationsPage() {
       }
       return null;
     })
-    .filter(Boolean);
+    .filter((alert): alert is NonNullable<typeof alert> => alert !== null);
 
   const recentExpenses = expenses.slice(0, 3).map((expense) => ({
     icon: CreditCard,

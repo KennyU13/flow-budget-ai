@@ -112,6 +112,21 @@ Les clés Supabase privilégiées et les écritures du cache ne sont jamais expo
 
 ## Responsive global
 
+### Densité de l'interface
+
+Le dashboard adopte une densité plus compacte sans réduire la lisibilité :
+
+- espacement vertical de page réduit entre l'en-tête, les statistiques et les sections ;
+- cartes statistiques avec un remplissage de 20 à 24 px et sans hauteur minimale superflue ;
+- graphiques limités à environ 300 px sur desktop et 240 px sur mobile ;
+- état vide compact remplaçant la surface complète d'un graphique lorsqu'aucune donnée n'existe ;
+- section des dépenses récentes rapprochée des statistiques ;
+- contenu centré dans une largeur maximale cohérente, sans étirement artificiel sur les écrans larges ;
+- grandes cartes sombres et recommandations limitées à la hauteur de leur contenu ;
+- conservation d'une zone tactile de 44 px minimum malgré la réduction des espaces.
+
+La présence de données peut augmenter la hauteur d'une visualisation, mais leur absence ne doit jamais réserver une grande zone blanche. Les mêmes principes s'appliquent aux analytics, budgets, notifications et listes vides.
+
 ### Règles communes
 
 - largeur minimale prise en charge : 320 px ;
@@ -178,6 +193,8 @@ Les parcours principaux sont vérifiés à 320, 375, 768, 1024 et 1440 px : accu
 - la date et la source du taux sont consultables ;
 - l'application reste utilisable avec Frankfurter indisponible lorsqu'un cache admissible existe ;
 - toutes les routes sont utilisables sans défilement horizontal à 320 px ;
+- le dashboard vide ne contient aucune zone graphique de plus de 240 px sur mobile ou 300 px sur desktop ;
+- les cartes vides occupent uniquement la hauteur nécessaire à leur message et leur action ;
 - la version Vercel est testée après application des migrations et variables d'environnement.
 
 ## Déploiement
