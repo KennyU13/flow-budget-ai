@@ -5,14 +5,7 @@ import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  plugins: [
-    tailwindcss(),
-    tanstackStart({
-      customViteReactPlugin: true,
-    }),
-    viteReact(),
-    nitro(),
-  ],
+  plugins: [tailwindcss(), tanstackStart(), viteReact(), nitro()],
   environments: {
     ssr: {
       build: {
